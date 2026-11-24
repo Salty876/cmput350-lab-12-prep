@@ -1,3 +1,9 @@
-a.
-b.
-c.
+a.  If you insert this sequence of points: p(i) = (1/(2^i), 1/(2^i)), it will maximally unbalance the tree and cause it to degenerate into a list.
+    An O(1) queury would be inserting point (0.1, 0.9) since it would go to an empty quadrant and an O(n) queury would be inserting point (1, 1) which would 
+    traverse the whole branch.
+b.  When you insert the 9th identical point, the leaf exceeds capacity of 8 and splits into children. Since all leaves have the same point they all move into the same
+    child and split again. This keeps on happening until we run out of memory. A solution would be to set a maximum depth and allow leaf nodes at that depth to hold more than 
+    8 primitives.
+c.  The translation may cause objects to move across quandrants and rotating could change which quadtrant contains which object. Quadtrees are better suited for scenes
+    where few objects and they dont move too much. They aren't suited for super dynamic scenese since even small transformations can can change the structure of the 
+    tree and make it expensive to update.

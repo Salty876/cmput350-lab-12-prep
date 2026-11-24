@@ -150,7 +150,7 @@ int main() {
     std::vector<Ball> balls;
     balls.reserve(NUM_BALLS);
     QuadTree<Ball> ballsAccel(
-        AABB{.minPoint = sf::Vector2f(0, 0), .maxPoint = sf::Vector2f(WORLD_WIDTH, WORLD_WIDTH)});
+        AABB<float>{.minPoint = sf::Vector2f(0, 0), .maxPoint = sf::Vector2f(WORLD_WIDTH, WORLD_WIDTH)});
     std::vector<uint32_t> candidates;
     candidates.reserve(NUM_BALLS);
     for (size_t i = 0; i < NUM_BALLS; ++i) {
@@ -190,7 +190,7 @@ int main() {
         for (auto& ball : balls) {
             ball.update(dt);
         }
-        QuadTree<Ball> newQuadTree(AABB{.minPoint = sf::Vector2f(0, 0),
+        QuadTree<Ball> newQuadTree(AABB<float>{.minPoint = sf::Vector2f(0, 0),
                                         .maxPoint = sf::Vector2f(WORLD_WIDTH, WORLD_WIDTH)});
 
         for (int i = 0; i < NUM_BALLS; ++i) {

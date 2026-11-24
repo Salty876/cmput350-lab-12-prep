@@ -393,7 +393,10 @@ private:
             bounds.minPoint.x = middle.x;
             bounds.minPoint.y = middle.y;
             break;
+        case OrdinalDirection::INVALID_DIRECTION:
+            break;
         }
+
     };
     // TODO
 
