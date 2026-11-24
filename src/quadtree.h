@@ -179,7 +179,50 @@ public:
     // Returns the number of intersection candidates found
     uint32_t queryIntersecting(const AABB<float>& queryBounds, std::vector<uint32_t>& candidates) {
         // TODO -- do not use recursion, but you may emulate it yourself.
-        return 0;
+        std::vector<std::pair<uint32_t, AABB<float>>> stack;
+
+        stack.push_back({0, mBounds});
+        uint32_t count = 0;
+
+        while (!stack.empty()) {
+            std::pair<uint32_t, AABB<float>> back = stack.back();
+            stack.pop_back();
+
+            if (!back.second.intersects(queryBounds)) {
+                continue;
+            }
+
+            QuadTreeNode node = mNodes[back.first];
+
+            uint32_t primIdx = node.primitivesIdx;
+
+            while (primIdx != QuadTreeNode::INVALID_IDX) {
+
+                if (mPrimitiveBounds[primIdx].intersects(queryBounds)) {
+                    candidates.push_back(primIdx);
+                    count++;
+                }
+
+                primIdx = mNextPrimitiveIdx[primIdx];
+            }
+
+            if (node.isLeaf()) {
+                continue;
+            }
+
+            for (uint16_t i = 0; i < 4; i++) {
+                uint32_t childIdx = node.childIdx + i;
+                AABB<float> childBounds = back.second;
+                aabbEnter(childBounds, static_cast<OrdinalDirection>(i));
+                if (childBounds.intersects(queryBounds)) {
+                    stack.push_back({childIdx, childBounds});
+                }
+            }
+
+
+        }
+
+        return count;
     }
 
     // suitable for sparse updates
@@ -288,16 +331,70 @@ private:
     // OrdinalDirection::INVALID.
     // Precondition: query is not empty. You may assume a priori that currentCell is not empty.
     // Precondition: currentCell contains query.
-    OrdinalDirection aabbQueryQuadrant(const AABB<float>& query,
-                                       const AABB<float>& currentCell) const {
-        return {};
+    OrdinalDirection aabbQueryQuadrant(const AABB<float>& query, const AABB<float>& currentCell) const {
+        sf::Vector2f middle = currentCell.middle();
+
+        if (query.maxPoint.x <= middle.x) {
+            // we're on left
+            if (query.minPoint.y >= middle.y) {
+                // we're down
+                return OrdinalDirection::SW;
+            }
+            else if (query.maxPoint.y <= middle.y) {
+                // we're up
+                return OrdinalDirection::NW;
+            }
+            else {
+                return OrdinalDirection::INVALID_DIRECTION;
+            }
+
+        }
+        else if (query.minPoint.x >= middle.x) {
+            // we're om right
+            if (query.minPoint.y >= middle.y) {
+                // we're down
+                return OrdinalDirection::SE;
+            }
+            else if (query.maxPoint.y <= middle.y) {
+                // we're up
+                return OrdinalDirection::NE;
+            }
+            else {
+                return OrdinalDirection::INVALID_DIRECTION;
+            }
+        }
+        else {
+            return OrdinalDirection::INVALID_DIRECTION;
+        }
     };
     // TODO
 
     // modifies a given AABB to obtain the resulting AABB if we were entering the cell on its
     // "direction" quadrant
     // Precondition: direction is not INVALID
-    void aabbEnter(AABB<float>& bounds, OrdinalDirection direction) const {};
+    void aabbEnter(AABB<float>& bounds, OrdinalDirection direction) const {
+        sf::Vector2f middle = bounds.middle();
+
+        switch (direction)
+        {
+        case OrdinalDirection::NE:
+            bounds.minPoint.x = middle.x;
+            bounds.maxPoint.y = middle.y;
+            break;
+        case OrdinalDirection::NW:
+            bounds.maxPoint.x = middle.x;
+            bounds.maxPoint.y = middle.y;
+            break;
+        case OrdinalDirection::SW:
+            bounds.maxPoint.x = middle.x;
+            bounds.minPoint.y = middle.y;
+            break;
+        case OrdinalDirection::SE:
+            bounds.minPoint.x = middle.x;
+            bounds.minPoint.y = middle.y;
+            break;
+        }
+    };
     // TODO
 
     AABB<float> mBounds;
